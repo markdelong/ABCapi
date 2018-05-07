@@ -1,0 +1,16 @@
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\ABC.deps.json
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\ABC.runtimeconfig.json
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\ABC.runtimeconfig.dev.json
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\ABC.dll
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\ABC.pdb
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\Efinity.dll
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\VSM.dll
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\ABCpdf.dll
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\Efinity.pdb
+D:\Projects\ABC\ABC\bin\Release\netcoreapp2.0\VSM.pdb
+D:\Projects\ABC\ABC\obj\Release\netcoreapp2.0\ABC.csproj.CoreCompileInputs.cache
+D:\Projects\ABC\ABC\obj\Release\netcoreapp2.0\ABC.AssemblyInfoInputs.cache
+D:\Projects\ABC\ABC\obj\Release\netcoreapp2.0\ABC.AssemblyInfo.cs
+D:\Projects\ABC\ABC\obj\Release\netcoreapp2.0\ABC.dll
+D:\Projects\ABC\ABC\obj\Release\netcoreapp2.0\ABC.pdb
+D:\Projects\ABC\ABC\obj\Release\netcoreapp2.0\ABC.csprojResolveAssemblyReference.cache

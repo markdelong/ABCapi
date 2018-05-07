@@ -1,0 +1,5 @@
+D:\Projects\ABC\ABC
+--output-path=obj\Any CPU\Release\netcoreapp2.0\
+--application-name=ABC
+--content-root=D:\Projects\ABC\ABC
+--file=
