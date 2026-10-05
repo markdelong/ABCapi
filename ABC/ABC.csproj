@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.0.3" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.2" />
   </ItemGroup>
@@ -13,6 +14,9 @@
   <ItemGroup>
     <Reference Include="Efinity">
       <HintPath>..\..\VSM\Code\Libraries\Efinity\Efinity\bin\Debug\Efinity.dll</HintPath>
+    </Reference>
+    <Reference Include="VSM">
+      <HintPath>..\..\VSM\Code\Libraries\VSM\bin\Debug\VSM.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

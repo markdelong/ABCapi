@@ -1,15 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Efinity;
 using ABC.Managers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ABC
 {
@@ -28,9 +24,41 @@ namespace ABC
             //MUST BE BEFORE services.addMvc();
             services.AddCors();
 
+            // Auth----------
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+
+                        // TODO: determine which of these to set
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = false,
+                        ValidateIssuerSigningKey = false,
+                        ValidIssuer = "yourdomain.com",
+                        ValidAudience = "yourdomain.com",
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Key"]))
+                    };
+                });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("TrainedStaffOnly",
+                    policy => policy
+                    .RequireClaim("CompletedBasicTraining"));
+            });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsLoggedIn",
+                    policy => policy.RequireClaim("LoggedIn"));
+                options.AddPolicy("IsVSMadmin",
+                    policy => policy.RequireClaim("VSMadmin"));
+            });
+
             services.AddMvc();
 
             ConnectionString.Credentials = Configuration["ConnectionStrings:ABC"];
+            ConnectionString.VSMCredentials = Configuration["ConnectionStrings:VSM"];
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,7 +75,7 @@ namespace ABC
             app.UseStaticFiles();
 
             app.UseMiddleware<ExceptionMiddleware>();
-
+            app.UseAuthentication();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

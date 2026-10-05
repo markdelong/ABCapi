@@ -38,6 +38,40 @@ namespace ABC.Managers
                 );
         }
 
+        public static bool DoesUserCompanyIdMatch(int requestedCompanyId, int userId, string connection)
+        {
+            string sql = @"SELECT TOP 1 CAST(FieldUserValue AS INT) FROM tblMembers m
+            INNER JOIN tblModuleFieldUserValue uv ON m.MemberId = uv.ElementId AND uv.ElementName = 'MemberId'
+            WHERE m.SiteId = 520 AND uv.FieldID = 3449 AND m.MemberId = @MemberId";
+
+            SqlCommand command = new SqlCommand(sql, new SqlConnection(connection));
+            command.Parameters.Add(new SqlParameter("@MemberId", userId));
+
+            int thisUsersCompanyId = ORM.ExecuteSingleReturn<int>(command);
+
+            return thisUsersCompanyId == requestedCompanyId;
+        }
+
+        /// <summary>
+        /// Gets the company that the specified login user belongs to
+        /// </summary>
+        /// <param name="UserId"></param>
+        /// <param name="connection"></param>
+        /// <returns></returns>
+        public static MemberCompany GetMemberCompanyByUserId(int UserId, string vsmconn, string abcconn)
+        {
+            string sql = @"SELECT TOP 1 CAST(FieldUserValue AS INT) FROM tblMembers m
+            INNER JOIN tblModuleFieldUserValue uv ON m.MemberId = uv.ElementId AND uv.ElementName = 'MemberId'
+            WHERE m.SiteId = 520 AND uv.FieldID = 3449 AND m.MemberId = @MemberId";
+
+            SqlCommand command = new SqlCommand(sql, new SqlConnection(vsmconn));
+            command.Parameters.Add(new SqlParameter("@MemberId", UserId));
+
+            int memberCompanyId = ORM.ExecuteSingleReturn<int>(command);
+
+            return GetMemberCompanyById(memberCompanyId, abcconn);
+        }
+
         public static SqlCommand GetMemberInfoGenericSearchCommand(string searchTerm, int currentPage, int itemsPerPage, bool badAddressReport, bool archivedOnly, bool unArchivedOnly, string searchSQL, string connection, bool getCount = false)
         {
             //string select = "p.*";
@@ -99,7 +133,7 @@ namespace ABC.Managers
             if (keywordSearchTerm.Trim().Length > 0) //keyword search
             {
                 //user is performing a keyword search rather than a map search
-                sql = @"SELECT m.MemberCompanyId, m.Member, m.Contact, m.[Address], m.Address2, m.City, m.[State], m.Zip, m.Phone, m.Fax, m.CompanyEmail, m.Website, m.ContactEmail, m.CompanyProfile, m.ListingLevel, m.LogoImage, m.KeywordTags, m.Latitude, m.Longitude, m.ServiceAreas
+                sql = @"SELECT m.MemberCompanyId, m.Member, m.Contact, m.[Address], m.Address2, m.City, m.[State], m.Zip, m.Phone, m.Fax, m.CompanyEmail, m.Website, m.ContactEmail, m.CompanyProfile, m.ListingLevel, m.LogoImage, m.KeywordTags, m.Latitude, m.Longitude, m.ServiceAreas, m.stepAffil, m.safetyAllianceAffil 
                     FROM MemberCompany m 
                 LEFT JOIN Code2MemberCompany c2m ON m.MemberCompanyId = c2m.MemberCompanyId
                 LEFT JOIN Codes c ON c.CodeId = c2m.CodeId
@@ -112,8 +146,10 @@ namespace ABC.Managers
                 foreach(string keyword in keywords)
                 {
                     sql += @" AND (m.Member LIKE '%' + @keyword" + keywordCount + @" + '%'
+                    OR m.CompanyProfile LIKE '%' + @keyword" + keywordCount + @" + '%'
                     OR m.ServiceAreas LIKE '%' + @keyword" + keywordCount + @" + '%'
                     OR m.KeywordTags LIKE '%' + @keyword" + keywordCount + @" + '%'
+                    OR m.Contact LIKE '%' + @keyword" + keywordCount + @" + '%'
                     OR m.City LIKE '%' + @keyword" + keywordCount + @" + '%'
                     OR c.Code LIKE '%' + @keyword" + keywordCount + @" + '%'
                     OR c.CodeName LIKE '%' + @keyword" + keywordCount + @" + '%')";
@@ -121,7 +157,7 @@ namespace ABC.Managers
                     keywordParams.Add("@keyword" + keywordCount, keyword.Trim());
                     keywordCount++;
                 }
-                sql += @" GROUP BY m.MemberCompanyId, m.Member, m.Contact, m.[Address], m.Address2, m.City, m.[State], m.Zip, m.Phone, m.Fax, m.CompanyEmail, m.Website, m.ContactEmail, m.CompanyProfile, m.ListingLevel, m.LogoImage, m.KeywordTags, m.Latitude, m.Longitude, m.ServiceAreas 
+                sql += @" GROUP BY m.MemberCompanyId, m.Member, m.Contact, m.[Address], m.Address2, m.City, m.[State], m.Zip, m.Phone, m.Fax, m.CompanyEmail, m.Website, m.ContactEmail, m.CompanyProfile, m.ListingLevel, m.LogoImage, m.KeywordTags, m.Latitude, m.Longitude, m.ServiceAreas, m.stepAffil, m.safetyAllianceAffil 
                         ORDER BY m.ListingLevel DESC, m.Member";
                 command = Efinity.ORM.DbCommand(new SqlConnection(connection), sql);
                 //throw new ApplicationException(sql);
@@ -164,8 +200,7 @@ namespace ABC.Managers
 
         public static int SaveMemberCompany(MemberCompany item, string connection)
         {
-            bool update = (item.MemberCompanyId > 0) ? true : false;
-            return Efinity.ORM.SaveRecord(item, update, "MemberCompanyId", "MemberCompany", connection);
+            return Efinity.ORM.SaveRecord(item, item.MemberCompanyId > 0, "MemberCompanyId", "MemberCompany", connection);
         }
         //End genCode
     }

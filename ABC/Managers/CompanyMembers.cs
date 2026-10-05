@@ -30,8 +30,9 @@ namespace ABC.Managers
         string _latitude = "";
         string _longitude = "";
         string _serviceareas = "";
-        Boolean _STEPAffil = false;
-        Boolean _SafetyALlianceAffil = false;
+        int _STEPAffil = 0;
+        int _SafetyALlianceAffil = 0;
+        string _membersince = "";
 
         public int MemberCompanyId {
             get { return _membercompanyid; }
@@ -124,13 +125,18 @@ namespace ABC.Managers
             get { return _serviceareas; }
             set { _serviceareas = value; }
         }
-        public Boolean STEPAffil {
+        public int STEPAffil {
             get { return _STEPAffil; }
             set { _STEPAffil = value; }
         }
-        public Boolean SafetyAllianceAffil {
+        public int SafetyAllianceAffil {
             get { return _SafetyALlianceAffil; }
             set { _SafetyALlianceAffil = value; }
+        }
+        public string MemberSince
+        {
+            get { return _membersince; }
+            set { _membersince = value; }
         }
     }
     //End genCode

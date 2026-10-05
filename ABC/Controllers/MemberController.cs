@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ABC.Managers;
 using Newtonsoft.Json.Linq;
-using System.Data.SqlClient;
+using Microsoft.AspNetCore.Authorization;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace ABC.Controllers
 {
@@ -15,9 +14,16 @@ namespace ABC.Controllers
     public class MemberController : Controller
     {
         string dbconn = ConnectionString.Credentials;
+        string vsmconn = ConnectionString.VSMCredentials;
+        private readonly IConfiguration _configuration;
+
+        public MemberController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         [HttpGet]
-        [Route("GetMembers")] 
+        [Route("GetMembers/{amount}")]
         public List<MemberCompany> GetMembers(int amount)
         {
             return CompanyMemberManager.GetMemberCompany(dbconn);
@@ -41,7 +47,7 @@ namespace ABC.Controllers
             string keywordSearchTerm = "";
 
             try
-            {
+            {   
                 NELat = Efinity.General.tryDouble(Request.Form["NELat"].ToString());
                 NELong = Efinity.General.tryDouble(Request.Form["NELong"].ToString());
                 SWLat = Efinity.General.tryDouble(Request.Form["SWLat"].ToString());
@@ -82,9 +88,9 @@ namespace ABC.Controllers
                 }
 
                 bool badAddressReport = false;
-                if(Request.Form["badAddressReport"].ToString() != null)
+                if (Request.Form["badAddressReport"].ToString() != null)
                 {
-                    if(Request.Form["badAddressReport"].ToString() == "true")
+                    if (Request.Form["badAddressReport"].ToString() == "true")
                     {
                         badAddressReport = true;
                     }
@@ -155,7 +161,7 @@ namespace ABC.Controllers
             List<MemberCompany> mList = CompanyMemberManager.GetMemberCompany(dbconn);
 
             dynamic dList = new List<dynamic>();
-            foreach(MemberCompany m in mList)
+            foreach (MemberCompany m in mList)
             {
                 dynamic item = new JObject();
                 item["name"] = m.Member;
@@ -166,13 +172,39 @@ namespace ABC.Controllers
             return dList;
         }
 
+        [Authorize]
         [HttpPost]
         [Route("SaveMember")]
         public int SaveMember(MemberCompany mc)
         {
             mc = (MemberCompany)Utilities.CleanProperties<MemberCompany>(mc);
+
+            // if user is not a VSM admin, validate requested and actual company IDs match
+            if (User.Claims.FirstOrDefault(c => c.Type == "VSMadmin") == null)
+            {
+
+                // get member-company id
+                if (!int.TryParse(User.Claims.First(c => c.Type == "userid").Value, out int memberId))
+                {
+                    HttpContext.Response.StatusCode = 400;
+                    return -1;
+                }
+
+                // get company-to-update id
+                int companyId = mc.MemberCompanyId;
+
+                // if ids do not match, return -2
+                if (!CompanyMemberManager.DoesUserCompanyIdMatch(companyId, memberId, vsmconn))
+                {
+                    HttpContext.Response.StatusCode = 403;
+                    return -2;
+                }
+            }
+
             return CompanyMemberManager.SaveMemberCompany(mc, dbconn);
         }
+
+        [Authorize(Policy = "IsVSMadmin")]
         [HttpDelete]
         [Route("DeleteMemberById/{id}")]
         public bool DeleteMemberById(int id)
